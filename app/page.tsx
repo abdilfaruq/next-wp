@@ -1,95 +1,148 @@
+'use client';
+
+import * as React from 'react';
 import Image from "next/image";
-import styles from "./page.module.css";
+import { useState, useEffect } from 'react';
+import Container from '@mui/material/Container';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 
 export default function Home() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  
+  interface UserData {
+    token: string;
+    user_display_name: string;
+    user_nicename: string;
+    user_email: string;
+  }
+
+  useEffect(() => {
+      setLoading(false);
+  }, []);
+
+  const handleLogin = async () => {
+      setLoading(true);
+      try {
+          const response = await fetch('http://wp-next.test/wp-json/jwt-auth/v1/token', {
+
+            method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ username, password })
+          });
+  
+          if (!response.ok) {
+              throw new Error('Login failed'); 
+          }
+  
+          const data: UserData = await response.json();
+          setUserData(data);
+          setError(null);
+  
+      } catch (error: any) {
+          setError('Oops! Login failed. Pastikan username dan password Anda benar.');
+          setUserData(null);
+      } finally {
+          setLoading(false);
+      }
+  };
+  
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+      <Container fixed>
+          <Image
+              src="/Untitled-design-scaled.jpg"
+              alt="Background Image"
+              layout="fill"
+              objectFit="cover"
+          />
+          <Container maxWidth="sm" style={{ position: 'relative', zIndex: 1 }}>
+              <Box mt={8}>
+                  <Typography variant="h4" gutterBottom style={{ color: '#3f51b5', textAlign: 'center', fontWeight: 600 }}>
+                      Provide Your WordPress Credentials
+                  </Typography>
+                  <TextField
+                      variant="outlined"
+                      margin="normal"
+                      fullWidth
+                      id="username"
+                      label="Username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                  />
+                  <TextField
+                      variant="outlined"
+                      margin="normal"
+                      fullWidth
+                      id="password"
+                      label="Password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <Button
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                      onClick={handleLogin}
+                      disabled={loading}
+                      style={{
+                          marginTop: '1rem',
+                          borderRadius: 24, 
+                          padding: '12px 24px',
+                          textTransform: 'none',
+                      }}
+                  >
+                      Login
+                  </Button>
+                  {error && (
+                      <Typography variant="body1" style={{ marginTop: '1rem', color: 'red', textAlign: 'center', fontWeight: 'bold' }}>
+                          {error}
+                      </Typography>
+                  )}
+                  {userData && (
+                      <Card style={{
+                          marginTop: '2rem',
+                          width: '100%',
+                          overflow: 'auto',
+                          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                          borderRadius: '12px',
+                          boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)',
+                          backdropFilter: 'blur(8px)',
+                          WebkitBackdropFilter: 'blur(8px)',
+                      }}>                        
+                          <CardContent>
+                              <Typography variant="h5" gutterBottom style={{ textAlign: 'center' }}>
+                                  User Account Details
+                              </Typography>
+                              <div style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', margin: 0 }}>
+                                  <Typography variant="body1" component="div" style={{ whiteSpace: 'pre-wrap' }}>
+                                      <strong>Token:</strong> {userData.token}<br />
+                                      <strong>Username:</strong> {userData.user_display_name}<br />
+                                      <strong>Alias:</strong> {userData.user_nicename}<br />
+                                      <strong>Primary Email:</strong> {userData.user_email}
+                                  </Typography>
+                              </div>
+                          </CardContent>
+                      </Card>
+                  )}
+                  {loading && (
+                      <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 9999 }}>
+                          <CircularProgress color="primary" />
+                      </div>
+                  )}
+              </Box>
+          </Container>
+      </Container>
   );
 }
